@@ -1,0 +1,106 @@
+import java.util.*;
+
+// declares a class
+public class FunctionSpotifyExample {
+
+    //
+    // Func: menu
+    // Desc: prints the menu
+    //
+    public static void menu() {
+
+        // present the menu
+        System.out.println("---- Spotify ----");
+        System.out.println("[h]ome");
+        System.out.println("[b]rowse");
+        System.out.println("[s]earch");
+        System.out.println("[r]adio");
+        System.out.println("[l]ibrary");
+        System.out.println("[f]avorites");
+        System.out.println();
+        System.out.println("[q]uit");
+        System.out.println("-----------------");
+        System.out.println();
+
+    }
+
+    //
+    // Func: handleUserSelection
+    // Desc: handle the user selection
+    //
+    public static void handleUserSelection(String input) {
+
+        // do something based on input
+        switch(input) {
+
+            case "h":
+                System.out.println("-->Home<--");
+                break;
+
+            case "b":
+                System.out.println("-->Browse<--");
+                break;
+
+            case "s":
+                System.out.println("-->Search<--");
+                break;
+
+            case "r":
+                System.out.println("-->Radio<--");
+                break;
+
+            case "l":
+                System.out.println("-->Library<--");
+                break;
+
+            case "f":
+                System.out.println("-->favorites<--");
+                break;
+
+            default:
+                break;
+          }
+
+    }
+
+    //
+    // Func: getUserCommand
+    // Desc: get user input from a scanner
+    //
+    public static String getUserCommand(String prompt, Scanner scan) {
+
+        System.out.print(prompt);
+
+        // get user input
+        String userInput = scan.nextLine();
+
+        return userInput;
+
+    }
+
+    // "main" makes this class a java app that can be executed
+    public static void main(final String[] args) {
+
+        
+        // this is a very common while loop pattern
+        Scanner scan = new Scanner(System.in);
+
+        String userInput = "";
+        while (!userInput.equals("q")) {
+
+
+            // call the menu procedure
+            menu();
+
+            userInput = getUserCommand("Enter command:", scan);
+
+            handleUserSelection(userInput);
+
+        }
+
+        // close the scanner
+        scan.close();
+
+    }
+
+}
