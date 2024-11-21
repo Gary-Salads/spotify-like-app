@@ -1,0 +1,296 @@
+import static javax.sound.sampled.AudioSystem.*;
+
+import java.io.*;
+import java.util.*;
+import javax.sound.sampled.*;
+import org.json.simple.*;
+import org.json.simple.parser.*;
+import java.util.random.*;
+/*
+    To compile: javac SpotifyLikeApp.java
+    To run: java SpotifyLikeApp
+ */
+
+// declares a class for the app
+public class SpotifyLikeAppExampleCode {
+
+  // global variables for the app
+  String status;
+  Long position;
+  static Clip audioClip;
+  
+
+  private static String basePath =
+  "C:/Users/Braga/Downloads/java2022-main (1)/java2022-main/spotify/";
+
+  // "main" makes this class a java app that can be executed
+  public static void main(final String[] args) {
+    // reading audio library from json file
+    JSONArray library = readAudioLibrary();
+
+    // create a scanner for user input
+    Scanner input = new Scanner(System.in);
+
+    String userInput = "";
+    while (!userInput.equals("q")) {
+      menu();
+
+      // get input
+      userInput = input.nextLine();
+
+      // accept upper or lower case commands
+      userInput = userInput.toLowerCase();
+
+      // do something
+      handleMenu(userInput, library);
+    }
+
+    // close the scanner
+    input.close();
+  }
+
+  /*
+   * displays the menu for the app
+   */
+  public static void menu() {
+    System.out.println("---- SpotifyLikeApp ----");
+    System.out.println("[H]ome");
+    System.out.println("[S]earch by title");
+    System.out.println("[L]ibrary");
+    System.out.println("[P]lay");
+    System.out.println("[PA]use");
+    System.out.println("[R]esume");
+    System.out.println("[N]ext");
+    System.out.println("[B]ack");
+    System.out.println("[F]avorite");
+    System.out.println("[F]avorites [L]ist");
+    System.out.println("[Q]uit");
+
+    System.out.println("");
+    System.out.print("Enter q to Quit:");
+  }
+
+  /*
+   * handles the user input for the app
+   */
+  public static void handleMenu(String userInput, JSONArray library) {
+    switch (userInput) {
+      case "h":
+        System.out.println("-->Home<--");
+        break;
+
+      case "s":
+        search(library);
+        break;
+
+      case "n":
+      skipForward(10);
+      break;
+
+      case "b":
+      skipBackward(10);
+      break;
+
+      case "l":
+        System.out.println("-->Library<--");
+     libDis(library);
+        break;
+
+      case "p":
+        System.out.println("-->Play<--");
+        play(library);
+        break;
+
+      case "pa":
+        System.out.println("-->Pause<--");
+        pause();
+        break;
+
+      case "r":
+        System.out.println("-->resume<--");
+        resume();
+        break;
+
+
+      case "fl":
+        System.out.println("-->Favorites List<--");
+        DisFav(library);
+        break;
+        
+        case "f":
+       Fav(library);
+        break;
+
+
+      case "q":
+        System.out.println("-->Quit<--");
+        break;
+      default:
+        break;
+    }
+  }
+
+  
+  public static void play(JSONArray library) {
+    // open the audio file
+      //This is a random number generator for the song suffle
+    Random random = new Random();
+    int randomNumber = random.nextInt(9) + 1;
+    /*
+   * plays an audio file
+   */
+    // get the filePath and open a audio file
+    final Integer songIndex = randomNumber; //random number is for suffleing the music played in the library 
+        JSONObject obj = (JSONObject) library.get(songIndex);
+        final String filename = (String) obj.get("filename");
+        final String title = (String) obj.get("name");
+        final String artist = (String) obj.get("artist");
+        final String filePath = basePath + "/wav/" + filename;
+        final File file = new File(filePath);
+      System.out.println(title);
+      System.out.println(artist);
+        // stop the current song from playing, before playing the next one
+        if (audioClip != null) {
+          audioClip.close();
+        }
+        try {
+          // create clip
+          audioClip = AudioSystem.getClip();
+    
+          // get input stream
+          final AudioInputStream in = AudioSystem.getAudioInputStream(file);
+    
+          audioClip.open(in);
+          audioClip.setMicrosecondPosition(0);
+          audioClip.loop(Clip.LOOP_CONTINUOUSLY);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+      private static Integer randomNumber() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'randomNumber'");
+      }
+    
+      public static void skipForward(int seconds) {
+    long newFrame = audioClip.getMicrosecondPosition() + (seconds * 100000);
+    if (newFrame < audioClip.getMicrosecondLength()) {
+        audioClip.setMicrosecondPosition(newFrame);
+    } else {
+        audioClip.setFramePosition(audioClip.getFrameLength() - 1);
+    }
+    
+}
+
+public static void skipBackward(int seconds) {
+    long newFrame = audioClip.getMicrosecondPosition() - (seconds * 100000);
+    if (newFrame >= 0) {
+        audioClip.setMicrosecondPosition(newFrame);
+    } else {
+        audioClip.setFramePosition(0);
+    }
+}
+  public static void pause() {
+    if (audioClip != null && audioClip.isRunning()) {
+      audioClip.stop();
+    }
+}
+
+public static void resume() {
+    if (audioClip != null && !audioClip.isRunning()) {
+      audioClip.start();
+    }
+}
+
+  //
+  // Func: readJSONFile
+  // Desc: Reads a json file storing an array and returns an object
+  // that can be iterated over
+  //
+  public static JSONArray readJSONArrayFile(String fileName) {
+    // JSON parser object to parse read file
+    JSONParser jsonParser = new JSONParser();
+
+    JSONArray dataArray = null;
+
+    try (FileReader reader = new FileReader(fileName)) {
+      // Read JSON file
+      Object obj = jsonParser.parse(reader);
+
+      dataArray = (JSONArray) obj;
+      // System.out.println(dataArray);
+
+    } catch (FileNotFoundException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+
+    return dataArray;
+  }
+  //library display
+public static void libDis(JSONArray library){
+  int length = library.size();
+  for (int i = 0; i <length; i++){
+    JSONObject obj = (JSONObject) library.get(i);
+    String name = (String)obj.get("name");
+    System.out.println(name);
+  }
+}
+//search
+public static void search(JSONArray library){
+  int length = library.size();
+  String title = " ";
+  System.out.println("--->Enter Title<---");
+  Scanner scer = new Scanner(System.in);
+        title = scer.nextLine();
+        for (int i = 0; i <length; i++){
+          JSONObject obj = (JSONObject) library.get(i);
+          String name = (String)obj.get("name");
+          String titlee = (String)obj.get("artist");
+          if (title.equals(name)){
+            System.out.println(name);
+            System.out.println(titlee);
+          }
+        }
+}
+ // Display favorites
+ public static void DisFav(JSONArray library) {
+  int length = library.size();
+  for (int i = 0; i < length; i++) {
+    JSONObject obj =  (JSONObject)library.get(i);
+    System.out.println(obj.get("favorite")) ;
+      String name = (String) obj.get("name");
+      System.out.println(name);
+  }
+ }
+ //Favorite a song
+ public static void Fav(JSONArray library) {
+  int length = library.size();
+    String title = " ";
+  System.out.println("-->Search by title<--");
+        Scanner scere = new Scanner(System.in);
+        title = scere.nextLine();
+        for (int i = 0; i <length; i++){
+          JSONObject obj = (JSONObject) library.get(i);
+          String name = (String)obj.get("name");
+          if (title.equals(name)){
+            library.set(i, obj);
+            obj.put("favorite",true); 
+          }
+        }
+ }
+  // read the audio library of music
+  public static JSONArray readAudioLibrary() {
+    final String jsonFileName = "audio-library.json";
+    final String filePath = basePath + "/" + jsonFileName;
+
+    JSONArray jsonData = readJSONArrayFile(filePath);
+
+    System.out.println("Reading the file " + filePath);
+
+    return jsonData;
+  }
+}
